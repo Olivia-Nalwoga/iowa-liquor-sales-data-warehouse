@@ -1,0 +1,14 @@
+# Do not commit source data or extracts
+*.csv
+*.xlsx
+*.xls
+*.zip
+
+# Do not commit secrets
+.env
+*.key
+*.pem
+
+# Temporary/system files
+.DS_Store
+Thumbs.db

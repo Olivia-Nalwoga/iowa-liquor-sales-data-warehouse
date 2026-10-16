@@ -27,15 +27,17 @@ I plan to build a BigQuery retail sales data warehouse with analytical tables or
 |---|---|
 | Dataset name | Iowa Liquor Sales |
 | Provider | State of Iowa public liquor sales data |
+| Source documentation | [Iowa Liquor Sales, January 2012 - Current — Iowa Data Hub](https://data.iowa.gov/catalog/dataset/1051) |
 | BigQuery project | `bigquery-public-data` |
 | BigQuery dataset | `iowa_liquor_sales` |
 | Candidate table | `sales` |
 | Full table name | `bigquery-public-data.iowa_liquor_sales.sales` |
 | Location / region | US |
 | Access | Publicly accessible from the course Google Cloud environment |
-| Public dataset documentation | https://docs.cloud.google.com/bigquery/public-data |
 
-The dataset description states that it contains wholesale liquor purchases by Iowa retailers and includes store/location information, product details, and quantities ordered. The source is already hosted in BigQuery, so no separate ingestion approval is needed for P0.
+The Iowa Data Hub describes the source as liquor purchase information from January 2012 through the most current month and lists the source as publicly available. The data is available in BigQuery through the `bigquery-public-data.iowa_liquor_sales.sales` table, which is the table I used for my profiling and feasibility checks.
+
+Because the source is already available in BigQuery and accessible from the course environment, I did not need to create a separate ingestion process for P0.
 
 ## 5. Quick source profile
 
@@ -53,7 +55,7 @@ The schema includes data types such as `STRING`, `DATE`, `INT64`, `FLOAT64`, and
 
 One interpretation concern is that the dataset represents liquor purchased by Iowa retail stores, not purchases made by individual customers. I will therefore treat the data as retailer purchase activity when analyzing the source.
 
-Another concern is the refresh timing. The latest transaction date I found is April 30, 2026, even though the BigQuery table was modified later. I have not verified the exact refresh schedule, so I will use the transaction dates as the actual time coverage for my analysis.
+Another concern is the refresh timing. The Iowa Data Hub lists the source as being updated monthly. However, the latest transaction date I found in the BigQuery table is April 30, 2026, even though the BigQuery table was modified later. For this project, I will use the transaction dates in BigQuery as the actual analytical time coverage.
 
 ## 6. Need-to-source fit
 

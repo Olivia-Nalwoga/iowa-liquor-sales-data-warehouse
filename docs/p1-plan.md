@@ -46,11 +46,11 @@ I tested whether `invoice_and_item_number` can identify one fact row in the sour
 
 The grain check returned:
 
-| Result | Observed value |
-| --- | ---: |
-| Source rows | 34,016,839 |
-| Rows with missing `invoice_and_item_number` | 0 |
-| Repeated `invoice_and_item_number` groups | 0 |
+| Result | Expected value | Observed value |
+| --- | ---: | ---: |
+| Source rows | 34,016,839 | 34,016,839 |
+| Rows with missing `invoice_and_item_number` | 0 | 0 |
+| Repeated `invoice_and_item_number` groups | 0 | 0 |
 
 The result supports the proposed grain because every source row has an `invoice_and_item_number`, and I did not find any repeated identifier groups. Based on this check, I plan to use an invoice-item transaction line as the grain of the central fact table.
 
@@ -68,7 +68,7 @@ The central fact table will be a **transaction fact table**.
 
 **One row represents one invoice-item transaction line for one liquor product purchased by one Iowa retail store on one transaction date.**
 
-The main measures in the fact table will include `sale_dollars`, `bottles_sold`, and volume-related measures. The main dimensions will be Date, Store, Product, Vendor, and Category.
+The main measures in the fact table will include `sale_dollars`, `bottles_sold`, and `volume_sold_liters`. The main dimensions will be Date, Store, Product, Vendor, and Category.
 
 ### Modeling choice
 
@@ -80,13 +80,13 @@ The primary analytical question will be answered by using retailer purchase doll
 
 Store information can change over time. For example, a store name, address, or county value may change while the source store identifier remains the same.
 
-I plan to use the source `store_number` as the business identifier and a separate warehouse store key in the Store dimension.
+I plan to use the source `store_number` as the business identifier and a separate warehouse store key in the Store dimension.The warehouse will use surrogate keys such as `date_key`, `store_key`, `product_key`, `vendor_key`, and `category_key` to connect the fact table to its dimensions, while source identifiers such as `store_number`, `item_number`, `vendor_number`, and `category` will remain business identifiers. `DimDate` will serve as the shared date dimension for consistent month, quarter, and year analysis.
 
 For important historical store attributes, I plan to use a **Type 2 slowly changing dimension** so that a new dimension row can be created when a meaningful store attribute changes. This will allow older fact rows to remain connected to the store information that was valid when the transaction occurred.
 
 This matters for the analytical question because a store or location change should not rewrite the meaning of older transactions. By preserving the historical store version, comparisons by store and location can remain consistent with the information that was valid at the time.
 
-By P3, I plan to test a small store change case and confirm that transactions before and after the change connect to the correct historical store version.
+By P3, I plan to test a small store change case and confirm that transactions before and after the change connect to the correct historical store version. This Type 2 Store history decision mainly protects the supporting store and county analysis, while the primary category-vendor-time question depends more directly on consistent category, vendor, and date relationships.
 
 ### Model diagram
 

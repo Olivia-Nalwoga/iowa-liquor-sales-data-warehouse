@@ -80,7 +80,7 @@ The primary analytical question will be answered by using retailer purchase doll
 
 Store information can change over time. For example, a store name, address, or county value may change while the source store identifier remains the same.
 
-I plan to use the source `store_number` as the business identifier and a separate warehouse store key in the Store dimension.The warehouse will use surrogate keys such as `date_key`, `store_key`, `product_key`, `vendor_key`, and `category_key` to connect the fact table to its dimensions, while source identifiers such as `store_number`, `item_number`, `vendor_number`, and `category` will remain business identifiers. `DimDate` will serve as the shared date dimension for consistent month, quarter, and year analysis.
+I plan to use the source `store_number` as the business identifier and a separate warehouse store key in the Store dimension. The warehouse will use surrogate keys such as `date_key`, `store_key`, `product_key`, `vendor_key`, and `category_key` to connect the fact table to its dimensions, while source identifiers such as `store_number`, `item_number`, `vendor_number`, and `category` will remain business identifiers. `DimDate` will serve as the shared date dimension for consistent month, quarter, and year analysis.
 
 For important historical store attributes, I plan to use a **Type 2 slowly changing dimension** so that a new dimension row can be created when a meaningful store attribute changes. This will allow older fact rows to remain connected to the store information that was valid when the transaction occurred.
 

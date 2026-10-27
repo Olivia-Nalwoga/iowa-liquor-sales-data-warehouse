@@ -40,6 +40,24 @@ One important data issue is that descriptive labels such as store names, vendor 
 
 Another limitation is that the source represents retailer purchasing activity, not direct consumer alcohol consumption. Therefore, I will not interpret higher retailer purchase dollars as proof that people in an area consumed more alcohol.
 
+### Grain check
+
+I tested whether `invoice_and_item_number` can identify one fact row in the source.
+
+The grain check returned:
+
+| Result | Observed value |
+| --- | ---: |
+| Source rows | 34,016,839 |
+| Rows with missing `invoice_and_item_number` | 0 |
+| Repeated `invoice_and_item_number` groups | 0 |
+
+The result supports the proposed grain because every source row has an `invoice_and_item_number`, and I did not find any repeated identifier groups. Based on this check, I plan to use an invoice-item transaction line as the grain of the central fact table.
+
+The reproducible SQL for this check is saved in:
+
+`sql/01_source_profile.sql`
+
 ## 2. Define the model and predict a history consequence
 
 ## 3. Plan the build and its checks

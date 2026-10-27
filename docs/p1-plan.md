@@ -60,6 +60,100 @@ The reproducible SQL for this check is saved in:
 
 ## 2. Define the model and predict a history consequence
 
+### Business process, fact type, and grain
+
+The business process is retailer liquor purchasing in Iowa.
+
+The central fact table will be a **transaction fact table**.
+
+**One row represents one invoice-item transaction line for one liquor product purchased by one Iowa retail store on one transaction date.**
+
+The main measures in the fact table will include `sale_dollars`, `bottles_sold`, and volume-related measures. The main dimensions will be Date, Store, Product, Vendor, and Category.
+
+### Modeling choice
+
+One important modeling choice is to keep store, product, vendor, category, and date information in separate dimensions instead of repeating all descriptive attributes in the fact table. This will make it easier to compare purchasing activity by different business perspectives while keeping the fact table at a clear invoice-item grain.
+
+The primary analytical question will be answered by using retailer purchase dollars from the fact table, grouping by product category and vendor, and filtering or grouping by the Date dimension to compare patterns over time.
+
+### History decision
+
+Store information can change over time. For example, a store name, address, or county value may change while the source store identifier remains the same.
+
+I plan to use the source `store_number` as the business identifier and a separate warehouse store key in the Store dimension.
+
+For important historical store attributes, I plan to use a **Type 2 slowly changing dimension** so that a new dimension row can be created when a meaningful store attribute changes. This will allow older fact rows to remain connected to the store information that was valid when the transaction occurred.
+
+This matters for the analytical question because a store or location change should not rewrite the meaning of older transactions. By preserving the historical store version, comparisons by store and location can remain consistent with the information that was valid at the time.
+
+By P3, I plan to test a small store change case and confirm that transactions before and after the change connect to the correct historical store version.
+
+### Model diagram
+
+The dimensional model is saved at:
+
+`docs/model.png`
+
+The model uses `FactLiquorPurchase` at the invoice-item transaction grain, connected to `DimDate`, `DimStore`, `DimProduct`, `DimVendor`, and `DimCategory`.
+
+### Question-to-model trace
+
+The primary analytical question asks how retailer liquor purchase dollars vary across product categories and vendors over time in Iowa.
+
+The model answers this question by using `sale_dollars` from `FactLiquorPurchase` as the main measure. `DimCategory` provides the product category used for grouping, `DimVendor` provides the vendor, and `DimDate` provides the month, quarter, or year used to compare purchasing patterns over time.
+
+The supporting question about stores and counties can be answered through `DimStore`, which contains the store identifier, store name, city, county, and other location attributes.
+
+This design keeps the fact table at one consistent invoice-item grain while allowing analysts to group the same transaction measures by the dimensions needed for the questions.
+
 ## 3. Plan the build and its checks
+
+### Planned layers
+
+| Layer | Planned object | Purpose |
+| --- | --- | --- |
+| Raw | `raw_iowa_liquor_sales` | Store the selected source fields from `bigquery-public-data.iowa_liquor_sales.sales` with minimal transformation. |
+| Curated | `fact_liquor_purchase` and dimension tables | Apply the dimensional model, create warehouse keys, preserve the invoice-item grain, and prepare clean analytical fields. |
+| Serving | `serving_purchase_by_category_vendor_time` | Summarize retailer purchase dollars by category, vendor, and time for the primary analytical question. |
+
+### Preliminary run order
+
+1. Read the selected fields from `bigquery-public-data.iowa_liquor_sales.sales`.
+2. Load the Raw layer.
+3. Build and validate the dimension tables.
+4. Build `FactLiquorPurchase` at the invoice-item transaction grain.
+5. Run grain and relationship checks.
+6. Build the Serving output for category, vendor, and time analysis.
+7. Reconcile Serving totals with the Curated fact table.
+
+### Field trace
+
+I will trace `sale_dollars` through the pipeline.
+
+- **Source:** `sale_dollars` from `bigquery-public-data.iowa_liquor_sales.sales`
+- **Raw:** retain the source value as `sale_dollars`
+- **Curated:** keep `sale_dollars` as a transaction-level measure in `FactLiquorPurchase`
+- **Serving:** sum `sale_dollars` by category, vendor, and time period to produce retailer purchase dollar totals for the primary analytical question
+
+### Planned checks
+
+| Risk | Planned check | Expected result | Where |
+| --- | --- | --- | --- |
+| The fact grain could be broken by duplicate invoice-item identifiers during the build. | Check that `invoice_and_item_number` remains unique in `FactLiquorPurchase`. | 0 repeated identifier groups | Curated |
+| Missing or unmatched category/vendor keys could cause retailer purchase dollars to be excluded from the Serving result. | Count unmatched category and vendor relationships and reconcile total `sale_dollars` between Curated and Serving. | No unexplained loss of retailer purchase dollars | Curated and Serving |
+
+### Access choice
+
+The traced field, `sale_dollars`, is public and low-risk because it comes from the State of Iowa public dataset and does not identify individual consumers.
+
+The intended users are retail sales and category analysts. The project owner and steward for this course project is the student author. `sale_dollars` can appear in the Serving output because it is necessary to answer the primary analytical question.
+
+### Largest remaining limitation
+
+The largest limitation is that the dataset measures liquor purchased by Iowa retail stores, not alcohol purchased or consumed by individual customers. Therefore, the project can describe retailer purchasing patterns but should not make direct claims about consumer alcohol consumption.
+
+### First P2 build step
+
+The first concrete P2 step will be to create the Raw table from the approved BigQuery source using only the fields needed for the planned dimensions, fact measures, and quality checks.
 
 ## 4. Diagnose and revise the plan

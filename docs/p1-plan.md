@@ -90,11 +90,15 @@ By P3, I plan to test a small store change case and confirm that transactions be
 
 ### Model diagram
 
-The dimensional model is saved at:
+The dimensional model is shown below.
 
-`docs/model.png`
+![Dimensional Model](Model.png)
 
 The model uses `FactLiquorPurchase` at the invoice-item transaction grain, connected to `DimDate`, `DimStore`, `DimProduct`, `DimVendor`, and `DimCategory`.
+
+The grain of the fact table is:
+
+**One row represents one invoice-item transaction line for one liquor product purchased by one Iowa retail store on one transaction date.**
 
 ### Question-to-model trace
 

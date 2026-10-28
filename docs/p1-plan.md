@@ -161,3 +161,19 @@ The largest limitation is that the dataset measures liquor purchased by Iowa ret
 The first concrete P2 step will be to create the Raw table from the approved BigQuery source using only the fields needed for the planned dimensions, fact measures, and quality checks.
 
 ## 4. Diagnose and revise the plan
+
+### P1 change memo
+
+- **Feedback that changed my plan:** During peer diagnosis, I received feedback to narrow the project to fewer analytical questions so that the warehouse would have a clearer purpose. I reduced the project to one primary question about retailer purchase dollars by product category, vendor, and time, with one supporting question about stores and counties. I also received feedback about controlling query cost when working with the large Iowa Liquor Sales table.
+
+- **What I changed and why:** I narrowed the analytical scope because focusing on one main question makes the dimensional model, measures, and Serving output easier to justify and test. I will also use small samples or limited date ranges only during early query development when I am checking syntax, joins, or general query logic. For final warehouse validation and analytical results, I plan to use the complete relevant dataset so that the results reflect the actual retailer purchasing patterns in the source.
+
+- **Feedback I did not adopt and why:** I did not adopt the suggestion to base the final analysis on sampled data or move the project to PostgreSQL with another platform. Sampling could miss uncommon transactions, duplicate identifiers, unmatched dimension records, or less common stores, vendors, categories, and time periods. I want the final results to be based on the full relevant data so that the analysis is as realistic and reproducible as possible. I also kept BigQuery because the approved public source is already available there and the current warehouse plan and SQL are built around that environment.
+
+- **Most important remaining uncertainty:** My main remaining uncertainty is how to control BigQuery processing cost while still running complete validation and final analysis on the full relevant dataset. In P2, I plan to separate low-cost development queries from the final validation and analytical queries that require complete data.
+
+### AI and tool use
+
+I used ChatGPT to help organize the P1 plan, clarify dimensional modeling concepts, and improve the wording of the documentation.
+
+I verified the resulting claims and code by comparing them with the P1 assignment requirements, the course dimensional modeling materials, the actual BigQuery source schema, and the observed results from my profiling SQL. I also reviewed the final model and plan to make sure the analytical question, grain, dimensions, measures, and planned checks remained consistent with the source data.
